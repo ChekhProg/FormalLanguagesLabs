@@ -11,11 +11,8 @@ class TestLexAnalyzer extends TestCase{
   }
 
   def testTxtOne(): Unit = {
-    val source = scala.io.Source.fromFile("src/test/resources/lextest.txt")
-    val str = try source.mkString finally source.close()
-    val data = LexData.lexAnalysis(str)
-    assertEquals(Lex("<"), data.tokens(3).lexeme)
-    assertEquals(Id("max", 0), data.tokens(5).lexeme)
-    assertEquals("max", data.idTable(0))
+    val data = LexData.lexAnalysis("do while 1<0 or 2<>3\n    m = 3 / 4;\n    s = (3 + i) + (1 /2);\n    output m\nloop")
+    assertEquals(Lex(";"), data.tokens(14).lexeme)
+    assertEquals(Lex("<>"), data.tokens(7).lexeme)
   }
 }

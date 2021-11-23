@@ -9,7 +9,8 @@ case object TokenOr extends TokenName
 case object TokenInput extends TokenName
 case object TokenOutput extends TokenName
 case object TokenRel extends TokenName
-case object TokenArith extends TokenName
+case object TokenArith1 extends TokenName
+case object TokenArith2 extends TokenName
 case object TokenSep extends TokenName
 case object TokenEq extends TokenName
 case object TokenId extends TokenName

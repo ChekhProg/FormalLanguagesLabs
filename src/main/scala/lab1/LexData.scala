@@ -33,13 +33,20 @@ object LexData {
       add = true
       state match {
         case S =>
-          if (i == length) state = F
+          if (i == length)
+            {
+              state = F
+              add = false
+            }
           else {
             val char = str(i)
-            if (char.isSpaceChar || char == '\n' || char == '\r') state = S
+            if (char.isSpaceChar || char == '\n' || char == '\r') {
+              state = S
+              add = false
+            }
             else if (char.isLetter) state = A
             else if (char.isDigit) state = B
-            else if ("+-/*>=()".contains(char)) state = C
+            else if ("+-/*>=();".contains(char)) state = C
             else if (char == '<') state = D
             else state = E
             add = false
@@ -50,7 +57,7 @@ object LexData {
             val char = str(i)
             if (char.isSpaceChar || char == '\n' || char == '\r') state = S
             else if (char.isLetterOrDigit) add = false
-            else if ("+-/*>=()".contains(char)) state = C
+            else if ("+-/*>=();".contains(char)) state = C
             else if (char == '<') state = D
             else {
               state = E
@@ -66,7 +73,7 @@ object LexData {
               state = B
               add = false
             }
-            else if ("+-/*>=()".contains(char)) state = C
+            else if ("+-/*>=();".contains(char)) state = C
             else if (char == '<') state = D
             else {
               state = E
@@ -78,6 +85,8 @@ object LexData {
           else {
             val char = str(i)
             if (char.isSpaceChar || char == '\n' || char == '\r') state = S
+            else if ("+-/*>=();".contains(char)) state = C
+            else if (char == '<') state = D
             else if (char.isLetter) state = A
             else if (char.isDigit) state = B
             else {
@@ -103,31 +112,48 @@ object LexData {
           }
       }
       if (add) {
-        val newToken = createToken(prevState, str.substring(lexStart, i), lexInd, lexStart,
-          idLexemes.size,
-          constLexemes.size)
+        val lexText = str.substring(lexStart, i)
+        val tokenName = getTokenName(prevState, lexText)
+
+        val tableId = tokenName match {
+          case TokenId =>
+            val v = idLexemes.find(_._2 == lexText)
+            val tableIdLocal = v match {
+              case Some(key -> _) => key
+              case None =>
+                val endId = idLexemes.size
+                idLexemes(idLexemes.size) = lexText
+                endId
+            }
+            tableIdLocal
+          case TokenConst =>
+            val v = constLexemes.find(_._2 == lexText)
+            val tableIdLocal = v match {
+              case Some(key -> _) => key
+              case None =>
+                val endId = constLexemes.size
+                constLexemes(constLexemes.size) = lexText
+                endId
+            }
+            tableIdLocal
+          case _ => 0
+        }
+
+        val newToken = createToken(prevState, lexText, lexInd, lexStart, tableId)
         tokens += newToken
-        if (newToken.tokenName == TokenId) {
-          val lexeme = newToken.lexeme.asInstanceOf[Id]
-          val id = lexeme.n
-          idLexemes(id) = lexeme.c
-        }
-        if (newToken.tokenName == TokenConst) {
-          val lexeme = newToken.lexeme.asInstanceOf[Const]
-          val id = lexeme.n
-          constLexemes(id) = lexeme.c
-        }
+
         lexInd += 1
+        lexStart = i //
       }
 
       if (state != prevState) lexStart = i
       if ((state != E) && (state != F)) i += 1
     }
-    if (state == E) throw new Exception("Lexeme Analyzer Exception")
+    if (state == E) throw new Exception("Lexeme Analyzer Exception: " +  str(i) + ", " + lexInd + ", " + lexStart)
     LexData(tokens.toList, idLexemes.toMap, constLexemes.toMap)
   }
 
-  def createToken(state: State, lexText: String, lexInd: Int, lexPos: Int, idsLength: Int, constLength: Int): Token = {
+  def getTokenName(state: State, lexText: String): TokenName = {
     val tokenName = state match {
       case A if lexText == "do" => TokenDo
       case A if lexText == "while" => TokenWhile
@@ -141,15 +167,21 @@ object LexData {
       case C if lexText == ">" | lexText == "<" => TokenRel
       case D if lexText == "<>" => TokenRel
       case D if lexText == "<" => TokenRel
-      case C if lexText == "+" | lexText == "-" | lexText == "*" | lexText == "/" => TokenArith
+      case C if lexText == "+" | lexText == "-" => TokenArith1
+      case C if lexText == "*" | lexText == "/" => TokenArith2
       case C if lexText == "=" => TokenEq
       case C if lexText == ";" => TokenSep
       case C if lexText == "(" => TokenOpPar
       case C if lexText == ")" => TokenClPar
     }
+    tokenName
+  }
+
+  def createToken(state: State, lexText: String, lexInd: Int, lexPos: Int, tableId: Int): Token = {
+    val tokenName = getTokenName(state, lexText)
     val token = (state, tokenName) match {
-      case (A, TokenId) => Token(tokenName, Id(lexText, idsLength), lexInd, lexPos)
-      case (B, _) => Token(tokenName, Const(lexText, constLength), lexInd, lexPos)
+      case (A, TokenId) => Token(tokenName, Id(lexText, tableId), lexInd, lexPos)
+      case (B, _) => Token(tokenName, Const(lexText, tableId), lexInd, lexPos)
       case (_, _) => Token(tokenName, Lex(lexText), lexInd, lexPos)
 
     }

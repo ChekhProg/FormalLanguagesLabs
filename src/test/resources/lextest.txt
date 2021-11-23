@@ -1,3 +1,6 @@
-do while 1<0
-    max = 3 / 4
+do while 1<0 or 2<>3 and i
+    m = 3 / 4;
+    s = (3 + i) + 0 / 9;
+    input k;
+    output 12
 loop
