@@ -1,0 +1,5 @@
+do while i < n
+    i = 1 + i;
+    b = i * 10;
+    output b
+loop

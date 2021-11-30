@@ -1,0 +1,4 @@
+do while i < n
+    i = 1 + i;
+    output 1
+loop

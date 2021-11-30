@@ -8,8 +8,8 @@ class PtList(val list: ListBuffer[PostfixEntry] = ListBuffer[PostfixEntry]().emp
     list.addOne(EtCmdPtr(ptr))
     list.size - 1
   }
-  def writeCmd(cmd: EtCmd): Int = {
-    list.addOne(cmd)
+  def writeCmd(cmd: Cmd): Int = {
+    list.addOne(EtCmd(cmd))
     list.size - 1
   }
   def setCmdPtr(ind: Int, ptr: Int): Unit = {

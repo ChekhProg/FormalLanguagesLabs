@@ -2,8 +2,10 @@ package lab1
 
 import lab1.State._
 
+import scala.collection.mutable
 
-case class LexData(tokens: List[Token], idTable: Map[Int, String], constTable: Map[Int, String]){
+
+case class LexData(tokens: List[Token], idTable: mutable.Map[Int, String], constTable: Map[Int, String]){
   def printLexData(): Unit = {
     print("Tokens: ")
     println(tokens)
@@ -150,7 +152,7 @@ object LexData {
       if ((state != E) && (state != F)) i += 1
     }
     if (state == E) throw new Exception("Lexeme Analyzer Exception: " +  str(i) + ", " + lexInd + ", " + lexStart)
-    LexData(tokens.toList, idLexemes.toMap, constLexemes.toMap)
+    LexData(tokens.toList, idLexemes, constLexemes.toMap)
   }
 
   def getTokenName(state: State, lexText: String): TokenName = {

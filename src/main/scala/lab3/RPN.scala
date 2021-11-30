@@ -2,11 +2,8 @@ package lab3
 
 import lab1._
 
-import javax.lang.model.element.ModuleElement.DirectiveVisitor
-import scala.collection.mutable.ListBuffer
-
 class RPN(
-           lexData: LexData,
+           val lexData: LexData,
            var iterator: Iterator[Token] = null,
            var token: Option[Token] = None,
            val ptList: PtList = new PtList()
